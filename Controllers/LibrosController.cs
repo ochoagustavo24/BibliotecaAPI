@@ -36,17 +36,26 @@ namespace BibliotecaAPI.Controllers
 
         // GET: api/Libros/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Libro>> GetLibro(int id)
+        public async Task<ActionResult<dynamic>> GetLibro(int id)
         {
-            var libro = await _context.Libros.Include(c => c.Categoria)
-                                                    .FirstOrDefaultAsync(l => l.Id == id);
+            var _libro = await (
+                                from libro in _context.Libros
+                                join categoria in _context.Categorias
+                                on libro.CategoriaId equals categoria.Id
+                                where libro.Id == id
+                                select new
+                                {
+                                    id = libro.Id,
+                                    nombre = libro.Nombre,
+                                    categoria = categoria.NombreCategoria
+                                }).FirstOrDefaultAsync();
 
-            if (libro == null)
+            if (_libro == null)
             {
                 return NotFound();
             }
 
-            return libro;
+            return _libro;
         }
 
         // PUT: api/Libros/5
